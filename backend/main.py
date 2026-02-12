@@ -7,6 +7,14 @@ from openai import OpenAI
 
 import os
 from dotenv import load_dotenv
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {"status": "PersonaSeek backend is running"}
+
 
 load_dotenv()
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
