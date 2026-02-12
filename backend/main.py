@@ -9,7 +9,9 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-app = FastAPI()
+
+app = FastAPI(title="AI Professional Finder")
+
 
 @app.get("/")
 def root():
@@ -21,8 +23,8 @@ SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-
 app = FastAPI(title="AI Professional Finder")
+
 
 # For local dev, allow everything. In production, set this to your frontend domain(s).
 app.add_middleware(
