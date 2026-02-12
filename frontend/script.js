@@ -9,7 +9,7 @@ const defaultConfig = {
   secondary_surface: '#003d66'
 };
 
-const API_BASE = "http://127.0.0.1:8000"; // change if your backend runs elsewhere
+const API_BASE = "https://personaseek-v2.onrender.com"; // change if your backend runs elsewhere
 
 function parseQuery(text) {
   const m = text.match(/^\s*(.+?)\s*(?:in|near|at)\s+(.+)\s*$/i);
