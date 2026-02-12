@@ -13,9 +13,6 @@ from fastapi import FastAPI
 app = FastAPI(title="AI Professional Finder")
 
 
-@app.get("/")
-def root():
-    return {"status": "PersonaSeek backend is running"}
 
 
 load_dotenv()
@@ -33,6 +30,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def root():
+    return {"status": "PersonaSeek backend is running"}
+
 
 def find_people(occupation: str, location: str):
     """Existing functionality: returns real local results via SerpAPI Google Maps engine."""
