@@ -724,3 +724,55 @@ if (window.elementSdk) {
     mapToEditPanelValues
   });
 }
+
+
+
+// =======================
+// Mobile sidebar toggle
+// =======================
+(function setupMobileSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const openBtn = document.getElementById('sidebar-toggle');
+  const closeBtn = document.getElementById('sidebar-close');
+
+  if (!sidebar || !backdrop) return;
+
+  const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+
+  const openSidebar = () => {
+    if (!isMobile()) return;
+    sidebar.classList.remove('-translate-x-full');
+    sidebar.classList.add('translate-x-0');
+    backdrop.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeSidebar = () => {
+    if (!isMobile()) return;
+    sidebar.classList.add('-translate-x-full');
+    sidebar.classList.remove('translate-x-0');
+    backdrop.classList.add('hidden');
+    document.body.style.overflow = '';
+  };
+
+  openBtn && openBtn.addEventListener('click', openSidebar);
+  closeBtn && closeBtn.addEventListener('click', closeSidebar);
+  backdrop.addEventListener('click', closeSidebar);
+
+  // If user rotates / resizes to desktop, ensure sidebar is visible and backdrop closed
+  window.addEventListener('resize', () => {
+    if (!isMobile()) {
+      backdrop.classList.add('hidden');
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      document.body.style.overflow = '';
+    } else {
+      // default closed on mobile
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      backdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+  });
+})();

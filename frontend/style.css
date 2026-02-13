@@ -423,3 +423,45 @@ body { background: #0f1117; }
   background-repeat:no-repeat !important;
   background-position:center !important;
 }
+
+
+
+/* =========================
+   Mobile responsiveness
+   ========================= */
+html, body { width: 100%; }
+body { overflow-x: hidden; }
+
+/* Make long text wrap inside messages/cards */
+.message-text, .markdown-content, .result-name, .result-meta {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Sidebar off-canvas behavior */
+@media (max-width: 767px) {
+  /* Remove any fixed left gap on small screens */
+  .chat-area { margin-left: 0 !important; }
+
+  /* Results grid -> 1 column on mobile */
+  .results-grid { grid-template-columns: 1fr !important; }
+
+  /* Make cards comfortable on mobile */
+  .result-card{
+    border-radius: 16px !important;
+    padding: 12px 14px !important;
+  }
+
+  /* Buttons look neat on mobile */
+  .result-actions{
+    gap: 8px !important;
+  }
+  .smart-link{
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Input sticks to bottom on mobile for easier typing */
+  footer { padding-bottom: 16px !important; }
+}
