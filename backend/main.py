@@ -6,13 +6,13 @@ import os
 from dotenv import load_dotenv
 
 from intent_store import match_search_term, get_description, refresh as refresh_intents
-from intent_db import connect
+from intent_db import init_db, connect
 from pydantic import BaseModel
-
-app = FastAPI(title="AI Professional Finder")
 
 load_dotenv()
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
+
+app = FastAPI(title="AI Professional Finder")
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,17 +22,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from contextlib import asynccontextmanager
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup code
+@app.on_event("startup")
+def startup():
+    init_db()
     refresh_intents(force=True)
-    yield
-    # Shutdown code (optional)
-
-app = FastAPI(title="AI Professional Finder", lifespan=lifespan)
-
 
 @app.get("/")
 def root():
@@ -84,7 +77,7 @@ def find_people(occupation: str, location: str):
     if not SERPAPI_KEY:
         raise HTTPException(
             status_code=500,
-            detail="SERPAPI_KEY is missing. Create backend/.env with SERPAPI_KEY=YOUR_KEY and restart the server."
+            detail="SERPAPI_KEY missing in backend/.env"
         )
 
     params = {
@@ -106,7 +99,9 @@ def find_people(occupation: str, location: str):
             "address": place.get("address"),
             "phone": place.get("phone"),
             "rating": place.get("rating"),
-            "website": place.get("website")
+            "website": place.get("website"),
+            "gps_coordinates": place.get("gps_coordinates"),  # optional useful
+            "place_id": place.get("place_id"),              # optional useful
         })
     return people
 
@@ -140,14 +135,9 @@ def _describe_problem(problem_text: str, search_term: str) -> str:
             f"📝 I understand: “{problem_text}”.\n"
             f"✅ You likely need **{search_term.title()}**.\n"
             f"ℹ️ {info}\n\n"
-            f"📍 Tell me your city and I’ll show real nearby options with address, rating, and contact (when available)."
+            f"📍 Tell me your city and I’ll show real nearby options with address, rating, and contact."
         )
-
-    return (
-        f"📝 I understand: “{problem_text}”.\n"
-        f"✅ I’ll look for **{search_term.title()}** near you.\n\n"
-        f"📍 Which city are you in?"
-    )
+    return f"📍 Which city are you in?"
 
 @app.post("/chat")
 def chat(payload: dict):
@@ -161,7 +151,6 @@ def chat(payload: dict):
 
     state = _sessions.get(chat_id, {})
 
-    # STEP 2: waiting for city
     if state.get("awaiting_city"):
         city = message
         search_term = state.get("search_term") or "professionals"
@@ -170,22 +159,16 @@ def chat(payload: dict):
         people = find_people(search_term, city)
 
         _sessions.pop(chat_id, None)
-
         return {
             "reply": f"Here are **{search_term.title()}** near **{city}** (based on: “{problem_text}”):",
             "results": people
         }
 
-    # STEP 1: infer term & ask city
     search_term = _infer_search_term(message)
-    if not search_term:
-        return {"reply": "Tell me what you need (plumber, lawyer, CA, web developer etc.)"}
-
     _sessions[chat_id] = {
         "awaiting_city": True,
         "problem_text": message,
         "search_term": search_term,
     }
 
-    desc = _describe_problem(message, search_term)
-    return {"reply": desc + "\n\nWhich city are you in?"}
+    return {"reply": _describe_problem(message, search_term) + "\n\nWhich city are you in?"}
